@@ -9,27 +9,31 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<'light' | 'dark'>('light');
+  const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
+    try {
+      const saved = StorageService.getTheme();
+      return saved === 'dark' ? 'dark' : 'light';
+    } catch {
+      return 'light';
+    }
+  });
 
   useEffect(() => {
-    const saved = StorageService.getTheme();
-    setThemeState(saved);
-    if (saved === 'dark') {
-      document.documentElement.classList.add('dark');
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      document.body.classList.add('dark');
+      root.style.colorScheme = 'dark';
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
+      document.body.classList.remove('dark');
+      root.style.colorScheme = 'light';
     }
-  }, []);
+    StorageService.setTheme(theme);
+  }, [theme]);
 
   const toggleTheme = () => {
-    const next = theme === 'light' ? 'dark' : 'light';
-    setThemeState(next);
-    StorageService.setTheme(next);
-    if (next === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    setThemeState((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
   return (
