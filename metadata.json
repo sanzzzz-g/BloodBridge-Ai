@@ -1,0 +1,6 @@
+{
+  "name": "BloodBridge AI — Intelligent Blood Supply Intelligence Platform",
+  "description": "AI-powered blood bank management system featuring real-time inventory tracking, smart compatible stock allocation, predictive demand forecasting, and donor engagement.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
