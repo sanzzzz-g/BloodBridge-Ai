@@ -10,7 +10,9 @@ import {
 import { 
   evaluateCandidatesForRequest, 
   executeAtomicAllocation, 
-  getDaysUntilExpiry 
+  getDaysUntilExpiry,
+  getHoursUntilExpiry,
+  isExpiringWithin48Hours
 } from '../lib/allocationEngine';
 import { 
   validateHistoricalData, 
@@ -432,6 +434,27 @@ describe('BloodBridge AI — Core Verification Suite (12 Mandatory Tests)', () =
 
     const plasmaABtoO = checkCompatibility('O+', 'AB+', 'Fresh Frozen Plasma (FFP)');
     expect(plasmaABtoO.isCompatible).toBe(true); // AB plasma lacks Anti-A/B, universal plasma donor!
+  });
+
+  // Test 13: 48-Hour critical expiry detection and notification helper
+  it('13. should accurately detect batches expiring within 48 hours for visual notification badges', () => {
+    const refDate = new Date('2026-10-13T12:00:00Z');
+
+    // Batch expiring in 1 day (e.g. 2026-10-14) -> within 48h!
+    expect(isExpiringWithin48Hours('2026-10-14', refDate)).toBe(true);
+    // Batch expiring in 2 days (e.g. 2026-10-15) -> within 48h!
+    expect(isExpiringWithin48Hours('2026-10-15', refDate)).toBe(true);
+
+    // Batch expiring in 5 days (e.g. 2026-10-18) -> not within 48h
+    expect(isExpiringWithin48Hours('2026-10-18', refDate)).toBe(false);
+
+    // Batch already expired yesterday (e.g. 2026-10-12) -> not expiring within 48h (already expired)
+    expect(isExpiringWithin48Hours('2026-10-12', refDate)).toBe(false);
+
+    // Verify hours calculation
+    const hours = getHoursUntilExpiry('2026-10-14', refDate);
+    expect(hours).toBeGreaterThan(0);
+    expect(hours).toBeLessThanOrEqual(48);
   });
 
 });

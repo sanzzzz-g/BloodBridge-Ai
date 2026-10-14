@@ -40,6 +40,26 @@ export function getDaysUntilExpiry(expiryDateStr: string, referenceDate: Date = 
 }
 
 /**
+ * Calculates hours remaining until expiration.
+ */
+export function getHoursUntilExpiry(expiryDateStr: string, referenceDate: Date = new Date()): number {
+  const expiry = new Date(expiryDateStr);
+  if (!expiryDateStr.includes('T')) {
+    expiry.setHours(23, 59, 59, 999);
+  }
+  const diffTime = expiry.getTime() - referenceDate.getTime();
+  return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60)));
+}
+
+/**
+ * Checks whether an inventory batch expires within the next 48 hours and is not yet expired.
+ */
+export function isExpiringWithin48Hours(expiryDateStr: string, referenceDate: Date = new Date()): boolean {
+  const days = getDaysUntilExpiry(expiryDateStr, referenceDate);
+  return days > 0 && days <= 2;
+}
+
+/**
  * Evaluates all inventory batches for a given blood request.
  * Implements FEFO (First-Expired, First-Out) with exact ABO match prioritization.
  */
