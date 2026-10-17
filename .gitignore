@@ -6,13 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
-<<<<<<< HEAD
-
 __pycache__/
 *.py[cod]
 .pytest_cache/
-=======
-__pycache__/
-*.py[cod]
-.pytest_cache/
->>>>>>> 9eaaa01 (Ignore generated Python cache files)
