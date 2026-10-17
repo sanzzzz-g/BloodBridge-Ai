@@ -1,0 +1,9 @@
+[
+  "research/simulator/test_simulator.py::test_biological_compatibility_matrix",
+  "research/simulator/test_simulator.py::test_full_simulation_run",
+  "research/simulator/test_simulator.py::test_hand_checkable_allocation_and_transfers",
+  "research/simulator/test_simulator.py::test_massive_shortage_handling",
+  "research/simulator/test_simulator.py::test_network_topologies",
+  "research/simulator/test_simulator.py::test_perishable_aging_lifecycle",
+  "research/simulator/test_simulator.py::test_theorem1_gaussian_safety_stock_equivalence"
+]
