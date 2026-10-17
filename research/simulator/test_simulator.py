@@ -24,10 +24,7 @@ from .uncertainty import DemandUncertaintyEngine
 from .scenarios import ScenarioGenerator
 from .solvers import BloodSupplyMILPSolver
 from .policies import (
-<<<<<<< HEAD
-=======
     BaselineHubSpokeFixedStock,
->>>>>>> 1fc7f12 (Add research simulator and verify transfer restrictions)
     BaselineIsolatedFixedStock,
     ProposedRiskAwareJointCoordination,
 )
@@ -227,8 +224,6 @@ def test_full_simulation_run():
     assert result.conservation_errors == 0, "Mass conservation must hold strictly with zero errors"
     assert result.fulfillment_rate_pct >= 0.0
     assert result.average_solve_time_ms < 500.0, f"Solve time ({result.average_solve_time_ms}ms) exceeds target"
-<<<<<<< HEAD
-=======
 
 
 
@@ -315,4 +310,3 @@ def test_solver_respects_allowed_transfer_pairs():
         (src, dst) in allowed_pairs
         for src, dst, *_ in result.transfers
     )
->>>>>>> 1fc7f12 (Add research simulator and verify transfer restrictions)
