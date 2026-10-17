@@ -112,15 +112,42 @@ class BaselineHubSpokeFixedStock(BasePolicy):
                 safety_reserves[(bid, c)] = ss_info["fixed_safety_stock"]
 
         # Solve standard MILP, but filter out peer-to-peer transfers (only hub routes permitted)
-        res = self.solver.solve_epoch(
+                
+        
+        # Restrict transfers to the designated hub -> satellite routes.
+        hub_ids = [
+            bid
+            for bid in self.network.bank_ids
+            if self.network.banks[bid].is_hub
+        ]
+        satellite_ids = [
+            bid
+            for bid in self.network.bank_ids
+            if not self.network.banks[bid].is_hub
+        ]
+
+        if len(hub_ids) != 1:
+            raise ValueError(
+                f"Hub-and-spoke policy requires exactly one hub; "
+                f"found {len(hub_ids)}."
+            )
+
+        allowed_transfer_pairs = {
+            (hub_id, satellite_id)
+            for hub_id in hub_ids
+            for satellite_id in satellite_ids
+        }
+
+        return self.solver.solve_epoch(
             current_inventory=current_inventory,
             fresh_inflows=fresh_inflows,
             requisitions=requisitions,
             safety_reserves=safety_reserves,
             in_transit_arrivals=in_transit_arrivals,
             allow_transfers=True,
+            allowed_transfer_pairs=allowed_transfer_pairs,
         )
-        return res
+
 
 
 class BaselineIsolatedDynamicReserve(BasePolicy):

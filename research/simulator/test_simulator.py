@@ -24,6 +24,10 @@ from .uncertainty import DemandUncertaintyEngine
 from .scenarios import ScenarioGenerator
 from .solvers import BloodSupplyMILPSolver
 from .policies import (
+<<<<<<< HEAD
+=======
+    BaselineHubSpokeFixedStock,
+>>>>>>> 1fc7f12 (Add research simulator and verify transfer restrictions)
     BaselineIsolatedFixedStock,
     ProposedRiskAwareJointCoordination,
 )
@@ -223,3 +227,92 @@ def test_full_simulation_run():
     assert result.conservation_errors == 0, "Mass conservation must hold strictly with zero errors"
     assert result.fulfillment_rate_pct >= 0.0
     assert result.average_solve_time_ms < 500.0, f"Solve time ({result.average_solve_time_ms}ms) exceeds target"
+<<<<<<< HEAD
+=======
+
+
+
+
+def test_hub_spoke_policy_restricts_transfer_directions():
+    """Hub-and-spoke policy should permit only hub-to-satellite transfers."""
+    net = BloodSupplyNetwork("debug")
+    policy = BaselineHubSpokeFixedStock(net)
+
+    hub_ids = [
+        bid for bid in net.bank_ids
+        if net.banks[bid].is_hub
+    ]
+    satellite_ids = [
+        bid for bid in net.bank_ids
+        if not net.banks[bid].is_hub
+    ]
+
+    assert len(hub_ids) == 1
+    hub_id = hub_ids[0]
+
+    current_inventory = {
+        (hub_id, "O+", "PRBC", 5): 10,
+    }
+
+    result = policy.decide(
+        current_inventory=current_inventory,
+        fresh_inflows={},
+        requisitions={},
+        in_transit_arrivals={},
+        historical_demands={},
+    )
+
+    assert result.status == "optimal"
+
+    assert all(
+        src == hub_id and dst in satellite_ids
+        for src, dst, *_ in result.transfers
+    )
+
+
+
+
+
+def test_solver_respects_allowed_transfer_pairs():
+    """The solver must exclude transfer routes not in the allowlist."""
+    net = BloodSupplyNetwork("debug")
+    solver = BloodSupplyMILPSolver(net)
+
+    hub_ids = [
+        bid for bid in net.bank_ids
+        if net.banks[bid].is_hub
+    ]
+    satellite_ids = [
+        bid for bid in net.bank_ids
+        if not net.banks[bid].is_hub
+    ]
+
+    assert len(hub_ids) == 1
+    hub_id = hub_ids[0]
+
+    allowed_pairs = {
+        (hub_id, satellite_id)
+        for satellite_id in satellite_ids
+    }
+
+    # Stock at a satellite should not be transferable to another bank.
+    satellite_id = satellite_ids[0]
+    inventory = {
+        (satellite_id, "O+", "PRBC", 5): 10,
+    }
+
+    result = solver.solve_epoch(
+        current_inventory=inventory,
+        fresh_inflows={},
+        requisitions={},
+        safety_reserves={},
+        allow_transfers=True,
+        allowed_transfer_pairs=allowed_pairs,
+    )
+
+    assert result.status == "optimal"
+    assert all(
+        (src, dst) in allowed_pairs
+        for src, dst, *_ in result.transfers
+    )
+>>>>>>> 1fc7f12 (Add research simulator and verify transfer restrictions)

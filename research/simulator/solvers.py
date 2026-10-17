@@ -10,7 +10,7 @@ Implements:
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Dict, List, Tuple, Any, Optional, Set
 from collections import defaultdict
 import time
 import numpy as np
@@ -61,6 +61,7 @@ class BloodSupplyMILPSolver:
         safety_reserves: Dict[Tuple[str, str], float],
         in_transit_arrivals: Optional[Dict[Tuple[str, str, str, int], int]] = None,
         allow_transfers: bool = True,
+        allowed_transfer_pairs: Optional[Set[Tuple[str, str]]] = None,
     ) -> SolverResult:
         """
         Solves a single decision epoch optimization model.
@@ -116,10 +117,16 @@ class BloodSupplyMILPSolver:
         x_count = col
 
         # 2b. Lateral transfers y: between distinct banks
+               
         if allow_transfers:
             for (b_src, g, c, a), stock in available_stock.items():
                 for b_dst in self.network.bank_ids:
-                    if b_src != b_dst:
+                    pair_allowed = (
+                        allowed_transfer_pairs is None
+                        or (b_src, b_dst) in allowed_transfer_pairs
+                    )
+
+                    if b_src != b_dst and pair_allowed:
                         tup = (b_src, b_dst, g, c, a)
                         y_vars.append(tup)
                         y_by_cohort[(b_src, g, c, a)].append(col)
